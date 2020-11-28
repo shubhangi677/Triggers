@@ -1,0 +1,37 @@
+//This trigger is use if an contact's account is changed then all the contacts to that account will change their related account accordingly
+trigger TriggerOnContact on Contact (after insert,after update) {
+    if(trigger.isAfter){
+        if(trigger.isUpdate){
+            ContactTriggerHandler.afterUpdate(trigger.newMap , trigger.oldMap);
+             ContactTriggerHelper.AfterUpdate(trigger.new);
+           
+            //ContactTriggerHelper.AccountChanges(trigger.new , trigger.old);
+            List<Contact> UpdateList = new List<Contact>();     
+            Set<Id> AccId = new Set<Id>();
+            for(Contact ct:trigger.new){
+                Contact co = trigger.oldmap.get(ct.id);
+                if(co.AccountId != ct.AccountId){
+                    AccId.add(co.AccountId);
+                    UpdateList.add(ct);
+                }
+            }
+            List <Contact> ocb = new List<Contact>();
+            if(AccId.size()>0){
+                for(Contact con :[Select Id , AccountId from Contact where AccountId In :AccId]){
+                    for(Contact c : UpdateList){
+                        con.AccountId = c.AccountId;
+                        ocb.add(con);
+                    }
+                }
+            }
+            
+            Update ocb;
+            
+        }
+        if (trigger.isInsert) {
+            // ContactTriggerHelper.AfterUpdate(trigger.new);
+            //ContactTriggerHelper.CountContactsOperation(trigger.new);
+        }
+        
+    }
+}
