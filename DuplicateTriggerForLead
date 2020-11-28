@@ -1,0 +1,3 @@
+trigger duplicatetrigger on Lead (before insert) {
+  LeadTriggerHelper.beforeInsert(trigger.new);
+}
