@@ -1,0 +1,39 @@
+//This apex class will be called after insert and after update
+
+public class OpportunityLineItemTriggerHelper {
+    public static void CountPrivate(List<OpportunityLineItem> lst){
+        Count(lst);
+    }
+    private static void Count (List<OpportunityLineItem> lstOppItem){
+     Set <Id> OppSet = new Set<Id>();
+        for(OpportunityLineItem o:lstOppItem)
+            OppSet.add(o.OpportunityId);
+        
+       Set <Id> AccSet = new Set<Id>(); 
+       for(Opportunity op : [Select AccountId, id from Opportunity where id IN :OppSet])
+           AccSet.add(op.AccountId);
+        
+        for(Account a :[Select Id , (Select Name,AccountId from Opportunities) from Account where Id IN :AccSet]){
+            for(Opportunity o:a.Opportunities)
+                OppSet.add(o.Id);
+        }
+         
+        List <Opportunity> Related = [select Id, AccountId, (Select OpportunityId from OpportunityLineItems) 
+                                      from Opportunity where Id IN:OppSet];
+        Map <Id,Account> mp = new Map<Id,Account>();
+        for(Opportunity o:Related){
+            Account a = new Account();
+            a.Id = o.Id;
+            if(!mp.containsKey(a.Id)){
+            a.Related_OppLine_Item__c = o.OpportunityLineItems.size();
+            mp.put(a.Id,a);
+            }
+            else{
+                decimal items = mp.get(a.id).Related_OppLine_Item__c;
+                a.Related_OppLine_Item__c = items+o.OpportunityLineItems.size();
+                mp.put(a.id, a);
+            }
+          }
+        update mp.values();
+    }
+}
