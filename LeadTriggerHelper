@@ -1,0 +1,19 @@
+public class LeadTriggerHelper {
+    public static void beforeInsert(list<lead> lstNewLead){
+        Set<String> setNewEmail = new Set<String>();
+        for(Lead objlead :lstNewLead)
+            setNewEmail.add(objlead.Email);
+        
+        List <Lead> DuplicateLeads = [Select Id,Name,Email from Lead where Email IN:setNewEmail];     
+        Set <String> setOldEmail = new Set<String>();
+        for(Lead oblead:DuplicateLeads) {
+            setOldEmail.add(oblead.Email);
+        }
+        
+        for(Lead objlead : lstNewLead){
+            if(setOldEmail.contains(objlead.Email))
+                objlead.addError('You cannot create duplicate records');    
+            
+        }
+    }
+}
